@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+supabase
+python-dotenv
+openrouteservice
+joblib
+scikit-learn==1.6.1
+numpy
+pandas

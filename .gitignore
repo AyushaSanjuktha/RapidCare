@@ -1,0 +1,61 @@
+# =========================
+# Python
+# =========================
+
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+venv313/
+.env
+.env.*
+!.env.example
+
+# Python tools
+.pytest_cache/
+.mypy_cache/
+
+
+# =========================
+# Flutter / Dart
+# =========================
+
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+build/
+
+# Generated files
+*.g.dart
+*.freezed.dart
+
+
+# =========================
+# IDE
+# =========================
+
+.vscode/
+.idea/
+
+# Android Studio
+*.iml
+
+
+# =========================
+# OS
+# =========================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+
+# =========================
+# Logs
+# =========================
+
+*.log
