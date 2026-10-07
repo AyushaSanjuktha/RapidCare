@@ -17,7 +17,6 @@ Usage:
 
 import argparse
 import logging
-import shutil
 import sys
 from pathlib import Path
 
@@ -31,7 +30,6 @@ from tensorflow.keras import layers, models, optimizers
 
 from ml.dataset import make_dataset, oversample_to_balance, scan_dataset, stratified_split
 from ml.utils import (
-    BACKEND_DIR,
     CLASS_NAMES_PATH,
     DATA_DIR,
     IMG_SIZE,
@@ -270,16 +268,10 @@ def train(head_epochs=20, fine_tune_epochs=15, oversample=True, strong_aug=True)
         },
     )
 
-    # Publish the validated checkpoint so the API does not keep serving the
-    # previous model after training has completed.
-    shutil.copy2(MODEL_PATH, BACKEND_DIR / MODEL_PATH.name)
-    shutil.copy2(CLASS_NAMES_PATH, BACKEND_DIR / CLASS_NAMES_PATH.name)
-
     logger.info("Test accuracy (serving TTA): %.4f | F1 (macro): %.4f", metrics["accuracy"], metrics["f1_macro"])
     logger.info("Saved model  -> %s", MODEL_PATH)
     logger.info("Saved classes -> %s", CLASS_NAMES_PATH)
     logger.info("Saved metrics -> %s", METRICS_PATH)
-    logger.info("Published model -> %s", BACKEND_DIR)
     return metrics
 
 

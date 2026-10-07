@@ -13,7 +13,6 @@ import numpy as np
 
 # ---------------------------------------------------------------- paths ----
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-BACKEND_DIR = PROJECT_ROOT / "backend"
 DATA_DIR = PROJECT_ROOT / "data" / "raw"
 MODELS_DIR = PROJECT_ROOT / "models"
 MODEL_PATH = MODELS_DIR / "best_model.keras"

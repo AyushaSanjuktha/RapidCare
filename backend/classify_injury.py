@@ -14,9 +14,8 @@ from PIL import Image
 import tensorflow as tf
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = Path(BASE_DIR).parent
 
-MODEL_PATH = Path(BASE_DIR) / "best_model.keras"
-CLASS_NAMES_PATH = Path(BASE_DIR) / "class_names.json"
 IMG_SIZE = (224, 224)
 
 # Test-time augmentation: average the prediction over the original image and a
@@ -32,18 +31,33 @@ _model_lock = threading.Lock()
 _class_names = None
 
 
+def _model_dir() -> Path:
+    """Return the one approved model release directory.
+
+    Defaults to ``RapidCare/models``. Deployments may instead set
+    ``INJURY_MODEL_DIR``; a relative value is resolved from the RapidCare
+    project root, not from the process working directory.
+    """
+    configured = os.getenv("INJURY_MODEL_DIR")
+    if not configured:
+        return PROJECT_ROOT / "models"
+    path = Path(configured).expanduser()
+    return path if path.is_absolute() else (PROJECT_ROOT / path).resolve()
+
+
 def _load_model():
     """Load the Keras model once (thread-safe) and reuse it afterwards."""
     global _model
     if _model is None:
         with _model_lock:
             if _model is None:
-                if not MODEL_PATH.exists():
+                model_path = _model_dir() / "best_model.keras"
+                if not model_path.exists():
                     raise FileNotFoundError(
-                        f"Model not found at {MODEL_PATH}. "
-                        "Copy best_model.keras from openCV/models/ to RapidCare/backend/."
+                        f"Model not found at {model_path}. "
+                        "Train a model or set INJURY_MODEL_DIR to an approved model release."
                     )
-                _model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+                _model = tf.keras.models.load_model(model_path, compile=False)
     return _model
 
 
@@ -51,12 +65,13 @@ def _load_class_names():
     """Read and cache the class-name list once."""
     global _class_names
     if _class_names is None:
-        if not CLASS_NAMES_PATH.exists():
+        class_names_path = _model_dir() / "class_names.json"
+        if not class_names_path.exists():
             raise FileNotFoundError(
-                f"Class names not found at {CLASS_NAMES_PATH}. "
-                "Copy class_names.json from openCV/models/ to RapidCare/backend/."
+                f"Class names not found at {class_names_path}. "
+                "Train a model or set INJURY_MODEL_DIR to an approved model release."
             )
-        _class_names = json.loads(CLASS_NAMES_PATH.read_text())["classes"]
+        _class_names = json.loads(class_names_path.read_text())["classes"]
     return _class_names
 
 

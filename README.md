@@ -66,3 +66,15 @@ Rapidcare27/
 │
 ├── .gitignore
 └── README.md
+```
+
+## Injury model artifacts
+
+`models/` is the single source of truth for the approved injury-classifier
+release. The backend loads `models/best_model.keras` and
+`models/class_names.json` by default; `data/` and `ml/` remain outside the API
+because they are training assets.
+
+For a versioned deployment release, set `INJURY_MODEL_DIR` in `backend/.env`,
+for example `INJURY_MODEL_DIR=artifacts/injury-v1`. That release directory must
+contain `best_model.keras` and `class_names.json`.
