@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../utils/theme.dart';
 import '../utils/constants.dart';
 import '../services/api_service.dart';
 import '../services/location_service.dart';
+import '../models/injury_classification.dart';
 import 'severity_screen.dart';
 
 class EmergencyDetailsScreen extends StatefulWidget {
@@ -16,17 +18,36 @@ class EmergencyDetailsScreen extends StatefulWidget {
 class _EmergencyDetailsScreenState extends State<EmergencyDetailsScreen> {
   String _selectedType = AppConstants.emergencyTypes.first;
   final _symptomsController = TextEditingController();
-  XFile? _injuryPhoto; // CV teammate's model not ready — see note below
+  XFile? _injuryPhoto;
+  InjuryClassification? _injuryClassification;
+  bool _classifying = false;
   bool _submitting = false;
 
-  // TODO (CV module — not yet available): once the computer-vision teammate
-  // exposes a /classify-injury endpoint, send _injuryPhoto to it here and
-  // merge its result with the text-based severity response. Until then this
-  // photo is captured in the UI but NOT sent anywhere — it's a ready-made
-  // hook, not a live feature. Do not fake a CV result.
   Future<void> _pickPhoto() async {
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 70);
-    if (picked != null) setState(() => _injuryPhoto = picked);
+    if (picked == null) return;
+
+    setState(() {
+      _injuryPhoto = picked;
+      _injuryClassification = null;
+    });
+
+    setState(() => _classifying = true);
+    try {
+      final result = await ApiService.classifyInjury(File(picked.path));
+      if (mounted) setState(() => _injuryClassification = result);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Image classification failed: ${e.toString().replaceFirst('Exception: ', '')}'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _classifying = false);
+    }
   }
 
   // TODO (user auth — not yet available): replace with the real logged-in
@@ -111,31 +132,61 @@ class _EmergencyDetailsScreenState extends State<EmergencyDetailsScreen> {
             ),
             const SizedBox(height: 20),
             const Text('Injury Photo (optional)', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(
-              'Captured for future computer-vision analysis — not yet connected to a live model.',
-              style: TextStyle(fontSize: 11.5, color: AppColors.textMuted, fontStyle: FontStyle.italic),
-            ),
             const SizedBox(height: 8),
             InkWell(
-              onTap: _pickPhoto,
+              onTap: _classifying ? null : _pickPhoto,
               child: Container(
-                height: 100,
+                height: _injuryClassification == null ? 100 : null,
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+                  border: Border.all(color: Colors.grey.shade300),
                 ),
                 child: _injuryPhoto == null
                     ? const Center(child: Icon(Icons.add_a_photo_outlined, color: AppColors.textMuted))
-                    : Row(
-                        children: [
-                          const SizedBox(width: 16),
-                          const Icon(Icons.check_circle, color: AppColors.sevLow),
-                          const SizedBox(width: 8),
-                          const Text('Photo attached'),
-                        ],
-                      ),
+                    : _classifying
+                        ? Row(
+                            children: [
+                              const SizedBox(
+                                width: 20, height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.navy),
+                              ),
+                              const SizedBox(width: 12),
+                              const Text('Analysing injury…', style: TextStyle(color: AppColors.textMuted)),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.check_circle, color: AppColors.sevLow, size: 18),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Detected: ${_injuryClassification!.injuryType}',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Confidence: ${(_injuryClassification!.confidence * 100).toStringAsFixed(1)}%',
+                                style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+                              ),
+                              const SizedBox(height: 10),
+                              TextButton.icon(
+                                onPressed: _pickPhoto,
+                                icon: const Icon(Icons.refresh, size: 16),
+                                label: const Text('Retake'),
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              ),
+                            ],
+                          ),
               ),
             ),
             const SizedBox(height: 16),

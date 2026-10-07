@@ -1,12 +1,16 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from supabase import create_client
 from dotenv import load_dotenv
 import os
+import io
 import math
 from datetime import datetime, timezone
+from PIL import Image
 from triage import predict_severity
+from classify_injury import classify_injury
 import openrouteservice
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -18,9 +22,45 @@ load_dotenv(
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+class MissingSupabaseConfig(RuntimeError):
+    """Raised when the DB is used but SUPABASE_URL / SUPABASE_KEY are unset."""
+
+
+class _LazySupabase:
+    """
+    Create the Supabase client on first use rather than at import time.
+
+    This lets the model-only endpoints (/classify-injury and the triage model)
+    run without Supabase credentials configured, while endpoints that actually
+    touch the database still fail with a clear message when .env is missing.
+    """
+
+    def __init__(self):
+        self._client = None
+
+    def __getattr__(self, name):
+        if self._client is None:
+            if not SUPABASE_URL or not SUPABASE_KEY:
+                raise MissingSupabaseConfig(
+                    "Missing SUPABASE_URL and/or SUPABASE_KEY. "
+                    "Copy .env.example to .env and fill in the required values."
+                )
+            self._client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        return getattr(self._client, name)
+
+
+supabase = _LazySupabase()
 
 app = FastAPI(title="RapidCare API")
+
+
+@app.exception_handler(MissingSupabaseConfig)
+async def missing_supabase_config_handler(request, exc):
+    """Return an actionable message when the DB is used without credentials."""
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -279,7 +319,7 @@ def dispatch_responder(case_id: str):
             "status": "accepted",
             "distance_km": best_distance,
             "eta_minutes": best_eta,
-            "responded_at": "now()"
+            "responded_at": datetime.now(timezone.utc).isoformat()
         })
         .execute()
     )
@@ -543,145 +583,7 @@ def hospital_prebrief(case_id: str):
         "hospital": hospital
     }
 
-    # Get complete case information
-    case_response = (
-        supabase
-        .table("cases")
-        .select("*")
-        .eq("id", case_id)
-        .execute()
-    )
 
-    if not case_response.data:
-        raise HTTPException(
-            status_code=404,
-            detail="Emergency case not found"
-        )
-
-    case = case_response.data[0]
-
-    # Get responder information
-    responder = None
-
-    if case.get("responder_id"):
-        responder_response = (
-            supabase
-            .table("responders")
-            .select("*")
-            .eq("id", case["responder_id"])
-            .execute()
-        )
-
-        if responder_response.data:
-            responder = responder_response.data[0]
-
-    # Get hospital information
-    hospital = None
-
-    if case.get("hospital_id"):
-        hospital_response = (
-            supabase
-            .table("hospitals")
-            .select("*")
-            .eq("id", case["hospital_id"])
-            .execute()
-        )
-
-        if hospital_response.data:
-            hospital = hospital_response.data[0]
-
-    return {
-        "message": "Hospital pre-brief generated successfully",
-
-        "case": {
-            "case_id": case["id"],
-            "emergency_type": case["emergency_type"],
-            "symptoms": case["symptoms"],
-            "severity": case["severity"],
-            "patient_location": {
-                "latitude": case["latitude"],
-                "longitude": case["longitude"]
-            }
-        },
-
-        "responder": responder,
-
-        "hospital": hospital
-    }
-    # 1. Get the emergency case
-    case_response = (
-        supabase
-        .table("cases")
-        .select("*")
-        .eq("id", case_id)
-        .execute()
-    )
-
-    if not case_response.data:
-        raise HTTPException(
-            status_code=404,
-            detail="Emergency case not found"
-        )
-
-    case = case_response.data[0]
-
-    patient_lat = case["latitude"]
-    patient_lon = case["longitude"]
-
-    # 2. Get available emergency hospitals
-    hospitals_response = (
-        supabase
-        .table("hospitals")
-        .select("*")
-        .eq("emergency_available", True)
-        .execute()
-    )
-
-    hospitals = hospitals_response.data
-
-    if not hospitals:
-        return {
-            "message": "No emergency hospitals available",
-            "case_id": case_id
-        }
-
-    # 3. Calculate distance for every hospital
-    hospital_distances = []
-
-    for hospital in hospitals:
-
-        distance = calculate_distance(
-            patient_lat,
-            patient_lon,
-            hospital["latitude"],
-            hospital["longitude"]
-        )
-
-        hospital_distances.append({
-            "hospital": hospital,
-            "distance_km": round(distance, 2)
-        })
-
-    # 4. Select nearest hospital
-    nearest = min(
-        hospital_distances,
-        key=lambda x: x["distance_km"]
-    )
-
-    selected_hospital = nearest["hospital"]
-    distance = nearest["distance_km"]
-
-    # 5. Attach hospital to the case
-    supabase.table("cases").update({
-        "hospital_id": selected_hospital["id"]
-    }).eq("id", case_id).execute()
-
-    return {
-        "message": "Nearest hospital selected successfully",
-        "case_id": case_id,
-        "hospital": selected_hospital,
-        "distance_km": distance
-    }
 @app.get("/")
 def home():
     return {
@@ -783,7 +685,10 @@ def responder_en_route(case_id: str):
             detail="No responder has accepted this case"
         )
 
-    if case["status"] != "active":
+    # A responder may be assigned either by the automatic dispatcher
+    # (status "assigned") or by manually accepting a dispatch request on a
+    # case that is still "active". Both are valid starting points.
+    if case["status"] not in {"active", "assigned"}:
         raise HTTPException(
             status_code=400,
             detail=f"Case is already {case['status']}"
@@ -927,3 +832,42 @@ def emergency_fallback(case_id: str):
         },
         "emergency_contacts": responders
     }
+
+
+def _is_image(image_bytes: bytes) -> bool:
+    """True if the bytes actually decode as an image Pillow understands."""
+    try:
+        with Image.open(io.BytesIO(image_bytes)) as probe:
+            probe.verify()
+        return True
+    except Exception:
+        return False
+
+
+@app.post("/classify-injury")
+async def classify_injury_endpoint(file: UploadFile = File(...)):
+    """
+    Accept an image file, run the wound/injury classifier, and return
+    the predicted injury type with confidence score and per-class probabilities.
+    """
+    image_bytes = await file.read()
+
+    if not image_bytes:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+
+    # Validate the bytes themselves rather than the declared content type:
+    # several multipart clients (e.g. Dart's http MultipartFile.fromPath) send
+    # "application/octet-stream" for real photos, so the header is unreliable.
+    if not _is_image(image_bytes):
+        raise HTTPException(status_code=400, detail="Uploaded file must be an image")
+
+    try:
+        result = classify_injury(image_bytes)
+        return {
+            "message": "Classification successful",
+            **result,
+        }
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Classification failed: {exc}")

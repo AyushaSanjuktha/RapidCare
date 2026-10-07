@@ -1,0 +1,255 @@
+{
+  "trained_at": "2026-09-19T17:02:01+00:00",
+  "classes": [
+    "Abrasions",
+    "Bruises",
+    "Burns",
+    "Cut",
+    "Diabetic Wounds",
+    "Laseration",
+    "Normal",
+    "Pressure Wounds",
+    "Surgical Wounds",
+    "Venous Wounds"
+  ],
+  "images_per_class": {
+    "Abrasions": 161,
+    "Bruises": 239,
+    "Burns": 131,
+    "Cut": 97,
+    "Diabetic Wounds": 459,
+    "Laseration": 119,
+    "Normal": 197,
+    "Pressure Wounds": 599,
+    "Surgical Wounds": 417,
+    "Venous Wounds": 491
+  },
+  "skipped_corrupt_images": 0,
+  "split_sizes": {
+    "train": 4190,
+    "validation": 436,
+    "test": 437
+  },
+  "test_accuracy": 0.7299771167048055,
+  "test_loss": 0.494736909866333,
+  "test_precision_macro": 0.6972925285653806,
+  "test_recall_macro": 0.7512855655590209,
+  "test_f1_macro": 0.7062572278080284,
+  "test_f1_weighted": 0.7316167373901201,
+  "per_class_report": {
+    "0": {
+      "precision": 0.6551724137931034,
+      "recall": 0.7916666666666666,
+      "f1-score": 0.7169811320754716,
+      "support": 24.0
+    },
+    "1": {
+      "precision": 0.7894736842105263,
+      "recall": 0.8333333333333334,
+      "f1-score": 0.8108108108108109,
+      "support": 36.0
+    },
+    "2": {
+      "precision": 0.55,
+      "recall": 0.5789473684210527,
+      "f1-score": 0.5641025641025641,
+      "support": 19.0
+    },
+    "3": {
+      "precision": 0.5,
+      "recall": 0.7857142857142857,
+      "f1-score": 0.6111111111111112,
+      "support": 14.0
+    },
+    "4": {
+      "precision": 0.8,
+      "recall": 0.6956521739130435,
+      "f1-score": 0.7441860465116279,
+      "support": 69.0
+    },
+    "5": {
+      "precision": 0.4,
+      "recall": 0.8888888888888888,
+      "f1-score": 0.5517241379310345,
+      "support": 18.0
+    },
+    "6": {
+      "precision": 0.9,
+      "recall": 0.9,
+      "f1-score": 0.9,
+      "support": 30.0
+    },
+    "7": {
+      "precision": 0.8205128205128205,
+      "recall": 0.7111111111111111,
+      "f1-score": 0.7619047619047619,
+      "support": 90.0
+    },
+    "8": {
+      "precision": 0.7894736842105263,
+      "recall": 0.47619047619047616,
+      "f1-score": 0.594059405940594,
+      "support": 63.0
+    },
+    "9": {
+      "precision": 0.7682926829268293,
+      "recall": 0.8513513513513513,
+      "f1-score": 0.8076923076923077,
+      "support": 74.0
+    },
+    "accuracy": 0.7299771167048055,
+    "macro avg": {
+      "precision": 0.6972925285653806,
+      "recall": 0.7512855655590209,
+      "f1-score": 0.7062572278080284,
+      "support": 437.0
+    },
+    "weighted avg": {
+      "precision": 0.758425274715368,
+      "recall": 0.7299771167048055,
+      "f1-score": 0.7316167373901201,
+      "support": 437.0
+    }
+  },
+  "class_weights": {
+    "Abrasions": 1.0,
+    "Bruises": 1.0,
+    "Burns": 1.0,
+    "Cut": 1.0,
+    "Diabetic Wounds": 1.0,
+    "Laseration": 1.0,
+    "Normal": 1.0,
+    "Pressure Wounds": 1.0,
+    "Surgical Wounds": 1.0,
+    "Venous Wounds": 1.0
+  },
+  "training_config": {
+    "oversample": true,
+    "oversampled_added": 2153,
+    "strong_aug": true
+  },
+  "evaluated_at": "2026-10-04T09:47:58+00:00",
+  "test_size": 437,
+  "confusion_matrix": [
+    [
+      19,
+      2,
+      0,
+      0,
+      1,
+      2,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      30,
+      0,
+      4,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      1,
+      11,
+      2,
+      1,
+      2,
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      11,
+      0,
+      3,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      4,
+      0,
+      48,
+      1,
+      0,
+      7,
+      0,
+      8
+    ],
+    [
+      1,
+      0,
+      1,
+      0,
+      0,
+      16,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      27,
+      0,
+      0,
+      1
+    ],
+    [
+      2,
+      1,
+      1,
+      1,
+      3,
+      4,
+      0,
+      64,
+      6,
+      8
+    ],
+    [
+      2,
+      2,
+      0,
+      4,
+      6,
+      9,
+      2,
+      6,
+      30,
+      2
+    ],
+    [
+      0,
+      2,
+      3,
+      0,
+      1,
+      3,
+      0,
+      0,
+      2,
+      63
+    ]
+  ]
+}
