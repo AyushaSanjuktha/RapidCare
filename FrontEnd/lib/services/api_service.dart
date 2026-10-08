@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import '../utils/constants.dart';
 import '../models/emergency_case.dart';
 import '../models/responder.dart';
+import '../models/injury_classification.dart';
 
 /// ONE centralized place for all HTTP calls — no screen talks to http:// directly.
 ///
@@ -14,7 +17,7 @@ import '../models/responder.dart';
 /// or has to fake data during a live demo. Add them here only once the
 /// matching FastAPI route is built and tested.
 class ApiService {
-  static const String _baseUrl = AppConstants.baseUrl;
+  static String get _baseUrl => AppConstants.baseUrl;
 
   /// Thrown for any API failure, with a message safe to show the user directly.
   static Exception _friendlyError(Object e) {
@@ -86,22 +89,78 @@ class ApiService {
     }
   }
   static Future<void> acceptDispatchRequest(String requestId) async {
-  try {
-    final response = await http
-        .post(
-          Uri.parse('$_baseUrl/dispatch-request/$requestId/accept'),
-        )
-        .timeout(const Duration(seconds: 15));
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/dispatch-request/$requestId/accept'),
+          )
+          .timeout(const Duration(seconds: 15));
 
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Server returned ${response.statusCode}: ${response.body}',
-      );
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Server returned ${response.statusCode}: ${response.body}',
+        );
+      }
+    } catch (e) {
+      throw _friendlyError(e);
     }
-  } catch (e) {
-    throw _friendlyError(e);
   }
-}
+
+  /// Maps an image file path to the MIME type sent with the upload.
+  ///
+  /// MultipartFile.fromPath defaults to `application/octet-stream`, which the
+  /// backend rejects as "not an image", so the type must be set explicitly.
+  static MediaType _imageMediaTypeFor(String path) {
+    final ext = path.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'png':
+        return MediaType('image', 'png');
+      case 'gif':
+        return MediaType('image', 'gif');
+      case 'bmp':
+        return MediaType('image', 'bmp');
+      case 'webp':
+        return MediaType('image', 'webp');
+      case 'heic':
+        return MediaType('image', 'heic');
+      case 'jpg':
+      case 'jpeg':
+      default:
+        // image_picker hands back JPEGs (including when it re-encodes at
+        // imageQuality 70), so this is the safe fallback.
+        return MediaType('image', 'jpeg');
+    }
+  }
+
+  /// POST /classify-injury — uploads an injury photo and returns the
+  /// wound-type classification from the computer-vision model.
+  static Future<InjuryClassification> classifyInjury(File imageFile) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$_baseUrl/classify-injury'),
+      );
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'file',
+          imageFile.path,
+          contentType: _imageMediaTypeFor(imageFile.path),
+        ),
+      );
+
+      final streamed = await request.send().timeout(const Duration(seconds: 30));
+      final response = await http.Response.fromStream(streamed);
+
+      if (response.statusCode != 200) {
+        throw Exception('Server returned ${response.statusCode}: ${response.body}');
+      }
+
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return InjuryClassification.fromJson(json);
+    } catch (e) {
+      throw _friendlyError(e);
+    }
+  }
 
 
   // ---------------------------------------------------------------------

@@ -11,6 +11,9 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.6
   http: ^1.2.1
+  # Declared explicitly because ApiService imports it to set the multipart
+  # image content type (it was already present as a transitive dep of http).
+  http_parser: ^4.1.2
   geolocator: ^12.0.0
   image_picker: ^1.1.2
   intl: ^0.19.0

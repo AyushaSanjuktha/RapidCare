@@ -1,0 +1,215 @@
+{
+  "accuracy": 0.7666666666666667,
+  "results": [
+    {
+      "file": "data/new_images/Abrasions/abrasions (1).jpg",
+      "true_class": "Abrasions",
+      "predicted": "Abrasions",
+      "confidence": 0.9717,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Abrasions/abrasions (10).jpg",
+      "true_class": "Abrasions",
+      "predicted": "Abrasions",
+      "confidence": 0.982,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Abrasions/abrasions (11).jpg",
+      "true_class": "Abrasions",
+      "predicted": "Abrasions",
+      "confidence": 0.9354,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Bruises/bruises (1).jpg",
+      "true_class": "Bruises",
+      "predicted": "Bruises",
+      "confidence": 0.9986,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Bruises/bruises (10).jpg",
+      "true_class": "Bruises",
+      "predicted": "Bruises",
+      "confidence": 0.5276,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Bruises/bruises (100).jpg",
+      "true_class": "Bruises",
+      "predicted": "Bruises",
+      "confidence": 0.5714,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Burns/burns (1).jpg",
+      "true_class": "Burns",
+      "predicted": "Burns",
+      "confidence": 0.4525,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Burns/burns (10).jpg",
+      "true_class": "Burns",
+      "predicted": "Cut",
+      "confidence": 0.7682,
+      "correct": false
+    },
+    {
+      "file": "data/new_images/Burns/burns (11).jpg",
+      "true_class": "Burns",
+      "predicted": "Burns",
+      "confidence": 0.9797,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Cut/cut (1).jpg",
+      "true_class": "Cut",
+      "predicted": "Cut",
+      "confidence": 0.9408,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Cut/cut (10).jpg",
+      "true_class": "Cut",
+      "predicted": "Bruises",
+      "confidence": 0.939,
+      "correct": false
+    },
+    {
+      "file": "data/new_images/Cut/cut (11).jpg",
+      "true_class": "Cut",
+      "predicted": "Cut",
+      "confidence": 0.9102,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Diabetic Wounds/100_0.jpg",
+      "true_class": "Diabetic Wounds",
+      "predicted": "Diabetic Wounds",
+      "confidence": 0.9288,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Diabetic Wounds/101_0.jpg",
+      "true_class": "Diabetic Wounds",
+      "predicted": "Pressure Wounds",
+      "confidence": 0.363,
+      "correct": false
+    },
+    {
+      "file": "data/new_images/Diabetic Wounds/102_0.jpg",
+      "true_class": "Diabetic Wounds",
+      "predicted": "Surgical Wounds",
+      "confidence": 0.4358,
+      "correct": false
+    },
+    {
+      "file": "data/new_images/Laseration/laseration (1).jpg",
+      "true_class": "Laseration",
+      "predicted": "Laseration",
+      "confidence": 0.9824,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Laseration/laseration (10).jpg",
+      "true_class": "Laseration",
+      "predicted": "Laseration",
+      "confidence": 0.9844,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Laseration/laseration (11).jpg",
+      "true_class": "Laseration",
+      "predicted": "Laseration",
+      "confidence": 0.9601,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Normal/1.jpg",
+      "true_class": "Normal",
+      "predicted": "Normal",
+      "confidence": 0.9997,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Normal/10.jpg",
+      "true_class": "Normal",
+      "predicted": "Normal",
+      "confidence": 0.9994,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Normal/100.jpg",
+      "true_class": "Normal",
+      "predicted": "Normal",
+      "confidence": 1.0,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Pressure Wounds/100_0.jpg",
+      "true_class": "Pressure Wounds",
+      "predicted": "Surgical Wounds",
+      "confidence": 0.7044,
+      "correct": false
+    },
+    {
+      "file": "data/new_images/Pressure Wounds/10_0.jpg",
+      "true_class": "Pressure Wounds",
+      "predicted": "Pressure Wounds",
+      "confidence": 0.8445,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Pressure Wounds/10_1.jpg",
+      "true_class": "Pressure Wounds",
+      "predicted": "Pressure Wounds",
+      "confidence": 0.7569,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Surgical Wounds/100_0.jpg",
+      "true_class": "Surgical Wounds",
+      "predicted": "Venous Wounds",
+      "confidence": 0.9697,
+      "correct": false
+    },
+    {
+      "file": "data/new_images/Surgical Wounds/101_0.jpg",
+      "true_class": "Surgical Wounds",
+      "predicted": "Laseration",
+      "confidence": 0.7008,
+      "correct": false
+    },
+    {
+      "file": "data/new_images/Surgical Wounds/102_0.jpg",
+      "true_class": "Surgical Wounds",
+      "predicted": "Surgical Wounds",
+      "confidence": 0.8629,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Venous Wounds/100_0.jpg",
+      "true_class": "Venous Wounds",
+      "predicted": "Venous Wounds",
+      "confidence": 0.708,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Venous Wounds/101_0.jpg",
+      "true_class": "Venous Wounds",
+      "predicted": "Venous Wounds",
+      "confidence": 0.9828,
+      "correct": true
+    },
+    {
+      "file": "data/new_images/Venous Wounds/101_1.jpg",
+      "true_class": "Venous Wounds",
+      "predicted": "Venous Wounds",
+      "confidence": 0.9985,
+      "correct": true
+    }
+  ]
+}
